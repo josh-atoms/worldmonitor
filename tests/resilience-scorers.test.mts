@@ -9,6 +9,7 @@ import {
   getResilienceDomainWeight,
   scoreAllDimensions,
   scoreEnergy,
+  scoreTradeSanctions,
 } from '../server/worldmonitor/resilience/v1/_dimension-scorers.ts';
 import { installRedis } from './helpers/fake-upstash-redis.mts';
 import { RESILIENCE_FIXTURES } from './helpers/resilience-fixtures.mts';
@@ -72,13 +73,13 @@ describe('resilience scorer contracts', () => {
     }, 0).toFixed(2));
 
     assert.deepEqual(domainAverages, {
-      economic: 68.67,
+      economic: 69.67,
       infrastructure: 79.33,
       energy: 80,
       'social-governance': 61.75,
       'health-food': 59,
     });
-    assert.equal(overallScore, 69.03);
+    assert.equal(overallScore, 69.25);
   });
 });
 
@@ -140,5 +141,21 @@ describe('scoreEnergy storageBuffer metric', () => {
 
     assert.ok(resultNull.score >= 0 && resultNull.score <= 100, `score out of bounds: ${resultNull.score}`);
     assert.equal(resultNull.score, resultMissing.score, 'null fillPct should behave identically to missing key');
+  });
+});
+
+describe('scoreTradeSanctions WB tariff rate', () => {
+  it('WB tariff rate contributes to trade score', async () => {
+    installRedis(RESILIENCE_FIXTURES);
+    const result = await scoreTradeSanctions('US');
+    assert.ok(result.score >= 0 && result.score <= 100, `score out of bounds: ${result.score}`);
+    assert.ok(result.coverage > 0, 'coverage should be > 0 when tariff data is present');
+  });
+
+  it('high tariff rate country scores lower than low tariff rate', async () => {
+    installRedis(RESILIENCE_FIXTURES);
+    const noResult = await scoreTradeSanctions('NO');
+    const yeResult = await scoreTradeSanctions('YE');
+    assert.ok(noResult.score > yeResult.score, `NO (${noResult.score}) should score higher than YE (${yeResult.score}) due to lower tariff rate`);
   });
 });
