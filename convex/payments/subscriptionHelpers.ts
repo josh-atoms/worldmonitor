@@ -319,6 +319,20 @@ export async function handleSubscriptionActive(
       });
     }
   }
+
+  // Schedule welcome + admin notification emails (non-blocking)
+  if (email && process.env.RESEND_API_KEY) {
+    await ctx.scheduler.runAfter(
+      0,
+      internal.payments.subscriptionEmails.sendSubscriptionEmails,
+      {
+        userEmail: email,
+        planKey,
+        userId,
+        subscriptionId: data.subscription_id,
+      },
+    );
+  }
 }
 
 /**
