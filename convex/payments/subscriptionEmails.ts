@@ -13,13 +13,16 @@ const FROM = "World Monitor <noreply@worldmonitor.app>";
 const ADMIN_EMAIL = "elie@worldmonitor.app";
 
 const PLAN_DISPLAY: Record<string, string> = {
+  free: "Free",
   pro_monthly: "Pro (Monthly)",
   pro_annual: "Pro (Annual)",
-  api_monthly: "API (Monthly)",
-  api_annual: "API (Annual)",
-  pro: "Pro",
-  api: "API",
+  api_starter: "API Starter (Monthly)",
+  api_starter_annual: "API Starter (Annual)",
+  api_business: "API Business",
+  enterprise: "Enterprise",
 };
+
+const API_PLANS = new Set(["api_starter", "api_starter_annual", "api_business", "enterprise"]);
 
 async function sendEmail(
   apiKey: string,
@@ -41,29 +44,44 @@ async function sendEmail(
   }
 }
 
-function userWelcomeHtml(planName: string): string {
-  return `
-<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; color: #e0e0e0;">
-  <div style="background: #4ade80; height: 4px;"></div>
-  <div style="padding: 40px 32px 0;">
-    <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 32px;">
+function featureCardsHtml(planKey: string): string {
+  if (API_PLANS.has(planKey)) {
+    return `
       <tr>
-        <td style="width: 40px; height: 40px; border-radius: 50%; border: 1px solid #222; text-align: center; vertical-align: middle; background: #111;">
-          <span style="font-size: 20px; color: #4ade80;">&#9678;</span>
+        <td style="width: 50%; padding: 12px; vertical-align: top;">
+          <div style="background: #111; border: 1px solid #1a1a1a; padding: 16px; height: 100%;">
+            <div style="font-size: 20px; margin-bottom: 8px;">&#128273;</div>
+            <div style="font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px;">Full API Access</div>
+            <div style="font-size: 12px; color: #888; line-height: 1.4;">22 services, one API key</div>
+          </div>
         </td>
-        <td style="padding-left: 12px;">
-          <div style="font-size: 16px; font-weight: 800; color: #fff; letter-spacing: -0.5px;">WORLD MONITOR</div>
-          <div style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 2px;">by Someone.ceo</div>
+        <td style="width: 50%; padding: 12px; vertical-align: top;">
+          <div style="background: #111; border: 1px solid #1a1a1a; padding: 16px; height: 100%;">
+            <div style="font-size: 20px; margin-bottom: 8px;">&#9889;</div>
+            <div style="font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px;">Near-Real-Time Data</div>
+            <div style="font-size: 12px; color: #888; line-height: 1.4;">Priority pipeline with sub-60s refresh</div>
+          </div>
         </td>
       </tr>
-    </table>
-
-    <div style="background: #111; border: 1px solid #1a1a1a; border-left: 3px solid #4ade80; padding: 20px 24px; margin-bottom: 28px;">
-      <p style="font-size: 18px; font-weight: 600; color: #fff; margin: 0 0 8px;">Welcome to ${planName}!</p>
-      <p style="font-size: 14px; color: #999; margin: 0; line-height: 1.5;">Your subscription is now active. Here's what's unlocked:</p>
-    </div>
-
-    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 28px;">
+      <tr>
+        <td style="width: 50%; padding: 12px; vertical-align: top;">
+          <div style="background: #111; border: 1px solid #1a1a1a; padding: 16px; height: 100%;">
+            <div style="font-size: 20px; margin-bottom: 8px;">&#129504;</div>
+            <div style="font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px;">AI Analyst</div>
+            <div style="font-size: 12px; color: #888; line-height: 1.4;">Morning briefs, flash alerts, pattern detection</div>
+          </div>
+        </td>
+        <td style="width: 50%; padding: 12px; vertical-align: top;">
+          <div style="background: #111; border: 1px solid #1a1a1a; padding: 16px; height: 100%;">
+            <div style="font-size: 20px; margin-bottom: 8px;">&#128232;</div>
+            <div style="font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px;">Multi-Channel Alerts</div>
+            <div style="font-size: 12px; color: #888; line-height: 1.4;">Slack, Telegram, WhatsApp, Email, Discord</div>
+          </div>
+        </td>
+      </tr>`;
+  }
+  // Pro plans: no API access
+  return `
       <tr>
         <td style="width: 50%; padding: 12px; vertical-align: top;">
           <div style="background: #111; border: 1px solid #1a1a1a; padding: 16px; height: 100%;">
@@ -90,12 +108,38 @@ function userWelcomeHtml(planName: string): string {
         </td>
         <td style="width: 50%; padding: 12px; vertical-align: top;">
           <div style="background: #111; border: 1px solid #1a1a1a; padding: 16px; height: 100%;">
-            <div style="font-size: 20px; margin-bottom: 8px;">&#128273;</div>
-            <div style="font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px;">Full API Access</div>
-            <div style="font-size: 12px; color: #888; line-height: 1.4;">22 services, one API key</div>
+            <div style="font-size: 20px; margin-bottom: 8px;">&#128202;</div>
+            <div style="font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 4px;">10 Dashboards</div>
+            <div style="font-size: 12px; color: #888; line-height: 1.4;">Custom layouts with CSV + PDF export</div>
           </div>
         </td>
+      </tr>`;
+}
+
+function userWelcomeHtml(planName: string, planKey: string): string {
+  return `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; color: #e0e0e0;">
+  <div style="background: #4ade80; height: 4px;"></div>
+  <div style="padding: 40px 32px 0;">
+    <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 32px;">
+      <tr>
+        <td style="width: 40px; height: 40px; border-radius: 50%; border: 1px solid #222; text-align: center; vertical-align: middle; background: #111;">
+          <span style="font-size: 20px; color: #4ade80;">&#9678;</span>
+        </td>
+        <td style="padding-left: 12px;">
+          <div style="font-size: 16px; font-weight: 800; color: #fff; letter-spacing: -0.5px;">WORLD MONITOR</div>
+          <div style="font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 2px;">by Someone.ceo</div>
+        </td>
       </tr>
+    </table>
+
+    <div style="background: #111; border: 1px solid #1a1a1a; border-left: 3px solid #4ade80; padding: 20px 24px; margin-bottom: 28px;">
+      <p style="font-size: 18px; font-weight: 600; color: #fff; margin: 0 0 8px;">Welcome to ${planName}!</p>
+      <p style="font-size: 14px; color: #999; margin: 0; line-height: 1.5;">Your subscription is now active. Here's what's unlocked:</p>
+    </div>
+
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 28px;">
+      ${featureCardsHtml(planKey)}
     </table>
 
     <div style="text-align: center; margin-bottom: 36px;">
@@ -141,7 +185,7 @@ export const sendSubscriptionEmails = internalAction({
       apiKey,
       args.userEmail,
       `Welcome to World Monitor ${planName}`,
-      userWelcomeHtml(planName),
+      userWelcomeHtml(planName, args.planKey),
     );
     console.log(`[subscriptionEmails] Welcome email sent to ${args.userEmail}`);
 
